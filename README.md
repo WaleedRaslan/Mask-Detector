@@ -1,64 +1,171 @@
-# 😷 لوحة تحكم كاشف الكمامة
+# 😷 Face Mask Detection Dashboard
 
-تطبيق Streamlit واحد (بايثون بالكامل، بدون بناء API منفصل) يوفر:
+A real-time Face Mask Detection system built using **TensorFlow**, **Keras (MobileNetV2 Transfer Learning)**, **OpenCV**, **MediaPipe**, and **Streamlit**.
 
-1. **📷 كاميرا مباشرة** — بث فيديو حي من المتصفح، مع كشف الوجه (MediaPipe) وتصنيف الكمامة (نموذجك `MaskDetector.keras`) في الوقت الحقيقي.
-2. **🖼️ رفع صورة** — رفع أي صورة والتحقق من حالة الكمامة لكل وجه فيها.
-3. **📊 إحصائيات** — رسوم بيانية بـ matplotlib (توزيع الحالات، الفحوصات يوميًا، توزيع نسبة الثقة) + جدول تفصيلي، مبنية على سجل تلقائي لكل عملية كشف.
+The application provides an interactive dashboard capable of detecting face masks from both live webcam streams and uploaded images while logging predictions for statistical analysis.
 
-## 📁 محتويات المجلد
+---
 
-```
+## ✨ Features
+
+### 📷 Real-Time Webcam Detection
+- Live face detection using **MediaPipe Face Detection**
+- Real-time face mask classification using a trained **MobileNetV2** model
+- Bounding boxes with prediction labels and confidence scores
+
+### 🖼️ Image Detection
+- Upload any image
+- Automatically detect every face in the image
+- Predict whether each detected person is wearing a face mask
+
+### 📊 Analytics Dashboard
+- Automatic logging of every prediction
+- Interactive statistics generated using **Matplotlib**
+- Detection history table
+- Confidence score distribution
+- Daily detection statistics
+- Mask vs No Mask distribution
+
+---
+
+## 🧠 Model Details
+
+- Architecture: **MobileNetV2 (Transfer Learning)**
+- Framework: TensorFlow / Keras
+- Input Size: **224 × 224 × 3**
+- Output:
+  - **Mask**
+  - **No Mask**
+- Activation Function: **Sigmoid**
+- Binary Classification
+
+> The model includes an internal **Rescaling** layer, so no manual normalization (`/255`) is required during inference.
+
+---
+
+## 🛠️ Technologies Used
+
+- Python
+- TensorFlow
+- Keras
+- MobileNetV2
+- OpenCV
+- MediaPipe
+- NumPy
+- Pandas
+- Matplotlib
+- Streamlit
+
+---
+
+## 📁 Project Structure
+
+```text
 mask_dashboard/
-├── app.py                # التطبيق الرئيسي (واجهة Streamlit)
-├── detector.py            # منطق الكشف المشترك (النموذج + MediaPipe + التسجيل)
-├── MaskDetector.keras      # نموذجك (تم نسخه هنا)
-├── requirements.txt        # المكتبات المطلوبة
-└── detection_log.csv       # سيُنشأ تلقائيًا عند أول عملية كشف (لتخزين الإحصائيات)
+│
+├── app.py                 # Streamlit application
+├── detector.py            # Detection pipeline
+├── MaskDetector.keras     # Trained MobileNetV2 model
+├── requirements.txt
+└── detection_log.csv      # Automatically generated detection history
 ```
 
-## ⚙️ التثبيت والتشغيل (على جهازك المحلي)
+---
 
-> ملاحظة مهمة: يجب تشغيل هذا التطبيق **على جهازك الشخصي** حتى يستطيع الوصول لكاميرا الويب الخاصة بك عبر المتصفح.
+## 🚀 Installation
+
+Clone the repository:
 
 ```bash
-# 1) أنشئ بيئة افتراضية (اختياري لكن يُنصح به)
+git clone <repository-url>
+cd mask_dashboard
+```
+
+Create a virtual environment (optional):
+
+```bash
 python -m venv venv
-source venv/bin/activate      # على ويندوز: venv\Scripts\activate
+```
 
-# 2) ثبّت المكتبات
+Activate it:
+
+Windows
+
+```bash
+venv\Scripts\activate
+```
+
+Linux / macOS
+
+```bash
+source venv/bin/activate
+```
+
+Install dependencies:
+
+```bash
 pip install -r requirements.txt
+```
 
-# 3) شغّل التطبيق
+Run the application:
+
+```bash
 streamlit run app.py
 ```
 
-سيفتح المتصفح تلقائيًا على `http://localhost:8501`.
+The dashboard will be available at:
 
-## 🎥 ملاحظات حول الكاميرا المباشرة
+```
+http://localhost:8501
+```
 
-- الكاميرا المباشرة تعمل عبر تقنية **WebRTC** (مكتبة `streamlit-webrtc`)، وهي نفس التقنية المستخدمة في مكالمات الفيديو، لذا:
-  - يجب السماح للمتصفح بالوصول إلى الكاميرا عند الطلب.
-  - يفضّل استخدام **Chrome** أو **Edge** لأفضل توافق.
-  - إذا كنت تفتح التطبيق من خادم بعيد (وليس `localhost`)، يجب أن يكون الاتصال عبر **HTTPS** حتى تسمح المتصفحات بالوصول للكاميرا.
+---
 
-## 📊 كيف تُبنى الإحصائيات؟
+## 📊 Detection Logging
 
-كل عملية كشف (من الكاميرا أو من صورة مرفوعة) تُسجَّل تلقائيًا في `detection_log.csv` بالحقول:
-`timestamp, source, label, confidence`
+Every prediction is automatically stored in:
 
-صفحة الإحصائيات تقرأ هذا الملف مباشرة وترسم المخططات، مع إمكانية:
-- التصفية حسب المصدر (كاميرا / رفع صورة).
-- مسح السجل بالكامل بزر واحد.
+```
+detection_log.csv
+```
 
-## 🧠 تفاصيل النموذج
+Each record contains:
 
-- حجم الإدخال: `224x224x3`.
-- النموذج يحتوي على طبقة `Rescaling` داخلية، لذا **لا تحتاج** لقسمة الصورة على 255 يدويًا (تم الحفاظ على هذا السلوك من كودك الأصلي).
-- الإخراج: قيمة واحدة (sigmoid) — القيم `>= 0.5` تعني "لا يوجد كمامة"، وما دون ذلك يعني "يوجد كمامة".
+- Timestamp
+- Detection Source (Webcam / Uploaded Image)
+- Prediction Label
+- Confidence Score
 
-## 🛠️ تخصيصات مقترحة لاحقًا
+These records are used to generate the dashboard statistics.
 
-- إضافة تنبيه صوتي عند اكتشاف "بدون كمامة".
-- حفظ الصور الملتقطة نفسها (وليس فقط النتيجة) لمراجعتها لاحقًا.
-- ربط قاعدة بيانات حقيقية (SQLite/PostgreSQL) بدل CSV إذا زاد حجم البيانات كثيرًا.
+---
+
+## 📈 Dashboard Analytics
+
+The dashboard provides:
+
+- Detection History
+- Daily Detection Statistics
+- Mask vs No Mask Distribution
+- Confidence Score Distribution
+- Source Filtering (Webcam / Uploaded Images)
+- One-click Detection History Reset
+
+---
+
+## 🎯 Future Improvements
+
+- Audio alert when a person is detected without a face mask
+- Save detected face images alongside prediction results
+- Replace CSV logging with SQLite or PostgreSQL
+- Multi-camera support
+- REST API deployment
+- Docker support
+
+---
+
+## 👨‍💻 Author
+
+Developed by **Waleed Raslan**
+
+Computer Vision • Deep Learning • Artificial Intelligence
